@@ -1,0 +1,751 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ruta interactiva de mentores | Hackatón Docente 2026</title>
+<style>
+:root{
+  --navy:#123F6C;--navy2:#0A3158;--blue:#075B9E;--cyan:#16C7F4;
+  --pink:#FF174F;--pink2:#F23E70;--pinksoft:#FFE4ED;
+  --light:#EDF6FD;--light2:#DFF0FB;--green:#0B9D6B;--greensoft:#E9F8F1;
+  --ink:#173D68;--muted:#5A7893;--line:#D7E6F1;--white:#fff;
+  --shadow:0 12px 34px rgba(11,49,88,.10)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#F5F8FB;color:var(--ink)}
+button{font:inherit}
+.app{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100vh;transition:.25s}
+.app.sidebar-hidden{grid-template-columns:0 minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:var(--navy);color:#fff;overflow:hidden;z-index:20}
+.sidebar-inner{width:270px;height:100%;overflow:auto}
+.brand{padding:28px 22px 24px;border-bottom:1px solid rgba(255,255,255,.14)}
+.brand h1{margin:0;font-size:29px}
+.brand p{margin:8px 0 0;color:#CFE7F9;font-size:13px;line-height:1.45}
+.brand-line{height:4px;margin-top:22px;border-radius:999px;background:rgba(255,255,255,.22);overflow:hidden}
+.brand-line span{display:block;width:100%;height:100%;background:var(--cyan)}
+.nav{padding:14px 0}
+.nav button{width:100%;border:0;background:transparent;color:#fff;padding:14px 18px;text-align:left;display:flex;align-items:center;gap:11px;border-left:4px solid transparent;cursor:pointer}
+.nav button:hover,.nav button.active{background:rgba(255,255,255,.08);border-left-color:var(--cyan)}
+.dot{width:11px;height:11px;border:2px solid #fff;border-radius:50%;flex:none}
+
+.main{min-width:0;background:#fff}
+.topbar{position:sticky;top:0;z-index:15;height:64px;display:flex;justify-content:flex-end;align-items:center;padding:0 20px;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(7px)}
+.menu-btn{border:0;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;padding:11px 16px;border-radius:999px;font-weight:900;cursor:pointer;box-shadow:0 7px 18px rgba(18,63,108,.18)}
+
+.hero{padding:46px 54px 50px;color:#fff;background:radial-gradient(circle at 80% 20%,rgba(22,199,244,.18),transparent 30%),linear-gradient(135deg,var(--blue),var(--navy2))}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--cyan);border-radius:999px;padding:8px 15px;font-size:12px;font-weight:800;letter-spacing:.08em}
+.hero-pill:before{content:"";width:9px;height:9px;border-radius:50%;background:var(--pink)}
+.hero h2{margin:22px 0 16px;max-width:900px;font-size:54px;line-height:1}
+.hero h2 span{color:var(--cyan)}
+.hero p{margin:0;max-width:900px;font-size:19px;line-height:1.55;color:#EAF7FF}
+.hero-line{width:185px;height:8px;border-radius:999px;background:var(--pink);margin-top:22px}
+
+.content{max-width:1450px;margin:auto;padding:54px 56px 88px}
+.section{margin-bottom:72px;scroll-margin-top:82px}
+.section h3{margin:0 0 10px;font-size:31px;color:var(--navy);text-align:center}
+.lead{margin:0 auto 30px;max-width:1020px;font-size:16px;line-height:1.65;color:#456883;text-align:center}
+
+.event-board{border:1px solid var(--line);border-radius:26px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.board-head{padding:26px 30px;background:linear-gradient(135deg,var(--navy),var(--blue));color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.board-head h4{margin:0 0 5px;font-size:24px}
+.board-head p{margin:0;color:#EAF6FF;font-size:14px}
+.small-btn{border:1px solid rgba(255,255,255,.55);color:#fff;background:rgba(255,255,255,.07);padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:900;transition:.18s}
+.small-btn:hover{background:rgba(255,255,255,.14);transform:translateY(-1px)}
+
+.route-area{padding:38px 34px 34px;text-align:center;background:#FBFDFF;border-bottom:1px solid var(--line)}
+.selected-mentor{min-height:30px;margin-bottom:28px;color:var(--navy);font-size:22px;font-weight:900;text-align:center}
+.selected-mentor .badge{margin-left:8px}
+
+.round-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;max-width:1120px;margin:0 auto}
+.round-card{border:1px solid var(--line);border-radius:24px;padding:28px 22px;background:#fff;text-align:center;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;transition:.18s}
+.round-card:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(15,66,111,.08)}
+.round-card.done{border-color:#A6DEC7;background:var(--greensoft)}
+.round-title{color:var(--navy);font-size:22px;font-weight:900;letter-spacing:-.01em}
+.round-time{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.35}
+.round-group{margin:24px 0 22px;color:var(--blue);font-size:30px;font-weight:900;letter-spacing:-.02em}
+.complete-btn{width:100%;border:0;border-radius:999px;padding:14px 18px;cursor:pointer;font-weight:900;line-height:1.2;background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;box-shadow:0 8px 18px rgba(255,23,79,.18);transition:.18s;margin-top:auto}
+.complete-btn:hover{transform:translateY(-1px);box-shadow:0 11px 24px rgba(255,23,79,.24)}
+.complete-btn:active{transform:translateY(0)}
+.round-card.done .complete-btn{background:linear-gradient(135deg,var(--green),#19B982);box-shadow:0 8px 18px rgba(11,157,107,.18)}
+.no-selection{grid-column:1/-1;padding:32px;border:1px dashed var(--line);border-radius:18px;color:var(--muted);background:#fff}
+
+.mentor-section{padding:38px 34px 42px}
+.mentor-section-title{margin:0 0 24px;text-align:center;color:var(--navy);font-size:22px}
+.filters{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:30px}
+.filter-btn{border:1px solid #CFE0ED;background:#fff;color:var(--navy);border-radius:999px;padding:12px 20px;min-width:96px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(15,66,111,.05);transition:.18s}
+.filter-btn:hover{transform:translateY(-1px);background:#F6FAFD;border-color:#AFCDE3}
+.filter-btn.active{color:#fff;background:linear-gradient(135deg,var(--navy),var(--blue));border-color:transparent;box-shadow:0 8px 18px rgba(18,63,108,.18)}
+.mentor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:1120px;margin:0 auto}
+.mentor-btn{border:1px solid var(--line);background:#fff;border-radius:20px;padding:22px 18px;text-align:center;cursor:pointer;transition:.18s;min-height:116px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 5px 16px rgba(15,66,111,.04)}
+.mentor-btn:hover{background:#F4F9FD;transform:translateY(-2px);box-shadow:0 9px 22px rgba(15,66,111,.08)}
+.mentor-btn.selected{background:#EDF7FE;border-color:#9CCFF0;box-shadow:inset 0 0 0 2px #D7EFFB}
+.mentor-name{display:block;font-weight:900;color:var(--navy);margin-bottom:10px;line-height:1.3}
+.badge{display:inline-flex;align-items:center;padding:6px 11px;border-radius:999px;font-size:12px;font-weight:900}
+.badge.edu{background:#FFE2EC;color:#C91F55}
+.badge.inn{background:#DCF8FF;color:#00789B}
+.badge.ti{background:#E8ECFF;color:#2943AA}
+
+.note-box{max-width:1120px;margin:32px auto 0;padding:22px 24px;border-radius:18px;background:var(--light);color:#335A7C;line-height:1.55;text-align:center}
+.note-box strong{color:var(--navy)}
+
+.accordion{display:grid;gap:12px;max-width:980px;margin:0 auto}
+.acc-item{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff}
+.acc-btn{width:100%;border:0;background:#fff;color:var(--navy);padding:18px 20px;display:flex;justify-content:space-between;text-align:left;font-weight:900;cursor:pointer}
+.acc-btn:hover{background:#F7FAFD}
+.acc-content{display:none;padding:0 20px 20px;color:var(--muted);line-height:1.6}
+.acc-item.open .acc-content{display:block}
+.acc-item.open .acc-btn{background:var(--light)}
+
+.toast{position:fixed;right:22px;bottom:22px;z-index:50;background:var(--navy);color:#fff;padding:12px 16px;border-radius:999px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+.toast.show{opacity:1;transform:none}
+
+@media(max-width:1050px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;width:270px;transform:translateX(-100%);box-shadow:18px 0 40px rgba(0,0,0,.18);transition:.25s}
+  .app.mobile-open .sidebar{transform:none}
+  .round-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  .topbar{height:58px;padding:0 12px}
+  .menu-btn{padding:9px 12px;font-size:13px}
+  .hero{padding:30px 20px 34px}
+  .hero h2{font-size:39px}
+  .hero p{font-size:16px}
+  .content{padding:34px 16px 62px}
+  .section{margin-bottom:56px}
+  .section h3{font-size:26px}
+  .board-head{align-items:flex-start;flex-direction:column}
+  .route-area,.mentor-section{padding-left:16px;padding-right:16px}
+  .round-grid,.mentor-grid{grid-template-columns:1fr}
+  .round-card{min-height:0;padding:26px 20px}
+  .selected-mentor{font-size:20px}
+}
+
+/* Dinámica de las rutas */
+.dynamics-intro{
+  max-width:1040px;
+  margin:0 auto 30px;
+  text-align:center;
+  color:#456883;
+  line-height:1.65;
+}
+.flow-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:18px;
+  max-width:1160px;
+  margin:0 auto 34px;
+}
+.flow-card{
+  position:relative;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:24px 20px 22px;
+  background:#fff;
+  box-shadow:0 8px 24px rgba(11,49,88,.07);
+  text-align:center;
+}
+.flow-card:not(:last-child)::after{
+  content:"→";
+  position:absolute;
+  right:-15px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:3;
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:50%;
+  background:var(--navy);
+  color:#fff;
+  font-size:17px;
+  font-weight:900;
+  box-shadow:0 6px 14px rgba(18,63,108,.18);
+}
+.flow-icon{
+  width:72px;
+  height:72px;
+  margin:0 auto 16px;
+  border-radius:22px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,var(--light2),#F8FCFF);
+  color:var(--blue);
+  font-size:30px;
+  font-weight:900;
+}
+.flow-step{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:32px;
+  height:32px;
+  padding:0 10px;
+  border-radius:999px;
+  margin-bottom:10px;
+  background:var(--pinksoft);
+  color:#C91F55;
+  font-size:12px;
+  font-weight:900;
+}
+.flow-card h4{
+  margin:0 0 8px;
+  color:var(--navy);
+  font-size:18px;
+}
+.flow-card p{
+  margin:0;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.55;
+}
+.dynamics-callout{
+  max-width:1160px;
+  margin:0 auto 42px;
+  padding:20px 24px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#EAF6FD,#F7FBFE);
+  border:1px solid #CEE5F3;
+  text-align:center;
+  color:#335A7C;
+  line-height:1.6;
+}
+.dynamics-callout strong{color:var(--navy)}
+
+.overview-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:26px;
+  max-width:1240px;
+  margin:0 auto;
+}
+.overview-card{
+  border:1px solid var(--line);
+  border-radius:24px;
+  overflow:hidden;
+  background:#fff;
+  box-shadow:var(--shadow);
+}
+.overview-head{
+  padding:24px 28px 18px;
+  text-align:center;
+  background:#FBFDFF;
+  border-bottom:1px solid var(--line);
+}
+.overview-kicker{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 11px;
+  border-radius:999px;
+  background:var(--light2);
+  color:var(--blue);
+  font-size:12px;
+  font-weight:900;
+  margin-bottom:10px;
+}
+.overview-head h4{
+  margin:0 0 7px;
+  color:var(--navy);
+  font-size:22px;
+}
+.overview-head p{
+  margin:0 auto;
+  max-width:830px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.55;
+}
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.overview-table{
+  width:100%;
+  min-width:920px;
+  border-collapse:separate;
+  border-spacing:0;
+}
+.overview-table th,
+.overview-table td{
+  padding:15px 12px;
+  text-align:center;
+  vertical-align:middle;
+  border-bottom:1px solid var(--line);
+  border-right:1px solid var(--line);
+}
+.overview-table th:last-child,
+.overview-table td:last-child{border-right:0}
+.overview-table tbody tr:last-child td{border-bottom:0}
+.overview-table thead th{
+  position:sticky;
+  top:0;
+  background:var(--navy);
+  color:#fff;
+  font-size:13px;
+  line-height:1.35;
+  font-weight:900;
+}
+.overview-table thead th:first-child{
+  left:0;
+  z-index:2;
+}
+.overview-table tbody td:first-child{
+  position:sticky;
+  left:0;
+  z-index:1;
+  background:#F7FBFE;
+  color:var(--navy);
+  font-weight:400;
+}
+.overview-table tbody tr:nth-child(even) td:not(:first-child){
+  background:#FCFEFF;
+}
+.overview-table tbody td{
+  font-weight:400;
+}
+.overview-table .badge{
+  font-weight:400;
+}
+.table-mentor{
+  color:var(--navy);
+  font-weight:400;
+  font-size:13px;
+  line-height:1.35;
+}
+.table-note{
+  padding:14px 22px 18px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  background:#FBFDFF;
+  border-top:1px solid var(--line);
+}
+
+@media(max-width:1050px){
+  .flow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow-card:nth-child(2)::after{display:none}
+}
+@media(max-width:680px){
+  .flow-grid{grid-template-columns:1fr}
+  .flow-card:not(:last-child)::after{
+    content:"↓";
+    right:auto;
+    top:auto;
+    left:50%;
+    bottom:-15px;
+    transform:translateX(-50%);
+  }
+  .overview-head{padding:21px 18px 16px}
+  .overview-table th,.overview-table td{padding:13px 10px}
+}
+
+</style>
+</head>
+<body>
+<div id="app" class="app">
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+      <div class="brand">
+        <p>Mentores · Hackatón Docente 2026</p>
+        <div class="brand-line"><span></span></div>
+      </div>
+      <div class="nav">
+        <button class="nav-btn active" data-target="inicio"><span class="dot"></span>Bienvenida</button>
+        <button class="nav-btn" data-target="dinamica"><span class="dot"></span>Cómo funciona</button>
+        <button class="nav-btn" data-target="ruta"><span class="dot"></span>Ruta interactiva</button>
+        <button class="nav-btn" data-target="guia"><span class="dot"></span>Guía de intervención</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <button id="menuBtn" class="menu-btn">☰ Ocultar / mostrar menú</button>
+    </div>
+
+    <section id="inicio" class="hero">
+      <div class="hero-pill">SESIÓN DE PREPARACIÓN · MENTORES</div>
+      <h2>Conoce tu <span>ruta de mentoría</span></h2>
+      <p>Identifica los grupos que acompañarás y utiliza esta vista durante el evento para marcar cada ronda como completada.</p>
+      <div class="hero-line"></div>
+    </section>
+
+    <div class="content">
+
+      <section id="dinamica" class="section">
+        <h3>¿Cómo funcionan las rutas de mentoría?</h3>
+        <p class="dynamics-intro">
+          La dinámica está pensada para que cada grupo reciba distintas miradas durante la mañana.
+          Los equipos permanecen en su mesa y son los mentores quienes se desplazan según la ruta asignada.
+        </p>
+
+        <div class="flow-grid">
+          <article class="flow-card">
+            <div class="flow-icon">👥</div>
+            <div class="flow-step">PASO 1</div>
+            <h4>El grupo permanece en su mesa</h4>
+            <p>Cada equipo trabaja desde una mesa fija durante toda la etapa de mentorías.</p>
+          </article>
+
+          <article class="flow-card">
+            <div class="flow-icon">🧭</div>
+            <div class="flow-step">PASO 2</div>
+            <h4>El mentor sigue su ruta</h4>
+            <p>Cada mentor visita un grupo distinto en cada ronda, de acuerdo con la programación.</p>
+          </article>
+
+          <article class="flow-card">
+            <div class="flow-icon">⏱</div>
+            <div class="flow-step">PASO 3</div>
+            <h4>Cada ronda dura 40 minutos</h4>
+            <p>Ese tiempo se utiliza para escuchar, orientar, priorizar y dejar próximos pasos.</p>
+          </article>
+
+          <article class="flow-card">
+            <div class="flow-icon">↻</div>
+            <div class="flow-step">PASO 4</div>
+            <h4>Al finalizar, el mentor cambia de grupo</h4>
+            <p>Cuando termina la ronda, el mentor se dirige al siguiente grupo de su ruta.</p>
+          </article>
+        </div>
+
+        <div class="dynamics-callout">
+          <strong>¿Qué logra esta dinámica?</strong><br>
+          Cada grupo recibe acompañamiento desde Educación, Innovación y TI. En una de las especialidades tendrá una segunda mirada,
+          de acuerdo con la secuencia definida para su mesa.
+        </div>
+
+        <div class="overview-grid">
+          <article class="overview-card">
+            <div class="overview-head">
+              <div class="overview-kicker">CUADRO 1</div>
+              <h4>Especialidad que recibe cada grupo por ronda</h4>
+              <p>Este cuadro muestra la experiencia desde la perspectiva del grupo: qué tipo de mentoría recibirá en cada uno de los cuatro momentos.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="overview-table" aria-label="Especialidades por grupo y ronda">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>Ronda 1<br>9:20 – 10:00</th>
+                    <th>Ronda 2<br>10:00 – 10:40</th>
+                    <th>Ronda 3<br>10:40 – 11:20</th>
+                    <th>Ronda 4<br>11:20 – 12:00</th>
+                  </tr>
+                </thead>
+                <tbody id="specialtyTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-note">En celular puedes deslizar el cuadro horizontalmente.</div>
+          </article>
+
+          <article class="overview-card">
+            <div class="overview-head">
+              <div class="overview-kicker">CUADRO 2</div>
+              <h4>Mentor asignado a cada grupo por ronda</h4>
+              <p>Este segundo cuadro permite visualizar exactamente quién llegará a cada mesa en cada momento de la ruta.</p>
+            </div>
+            <div class="table-wrap">
+              <table class="overview-table" aria-label="Mentores por grupo y ronda">
+                <thead>
+                  <tr>
+                    <th>Grupo</th>
+                    <th>Ronda 1<br>9:20 – 10:00</th>
+                    <th>Ronda 2<br>10:00 – 10:40</th>
+                    <th>Ronda 3<br>10:40 – 11:20</th>
+                    <th>Ronda 4<br>11:20 – 12:00</th>
+                  </tr>
+                </thead>
+                <tbody id="mentorTableBody"></tbody>
+              </table>
+            </div>
+            <div class="table-note">La información se genera desde la misma ruta utilizada en la sección interactiva para mantener consistencia.</div>
+          </article>
+        </div>
+      </section>
+
+      <section id="ruta" class="section">
+        <h3>Ruta interactiva de mentorías</h3>
+        <p class="lead">Selecciona tu especialidad y luego tu nombre. Tu ruta aparecerá arriba. El progreso se guarda en este navegador aunque cambies de especialidad o selecciones a otro mentor.</p>
+
+        <div class="event-board">
+          <div class="board-head">
+            <div>
+              <h4>Mi ruta</h4>
+              <p>Marca cada ronda al finalizarla. Puedes retomarla después sin perder el avance.</p>
+            </div>
+            <button id="resetBtn" class="small-btn">Reiniciar mi progreso</button>
+          </div>
+
+          <div class="route-area">
+            <div id="selectedMentor" class="selected-mentor">Selecciona una especialidad y luego tu nombre</div>
+            <div id="roundGrid" class="round-grid">
+              <div class="no-selection">Tu ruta aparecerá aquí después de seleccionar tu nombre.</div>
+            </div>
+          </div>
+
+          <div class="mentor-section">
+            <h4 class="mentor-section-title">Selecciona tu nombre</h4>
+
+            <div class="filters">
+              <button class="filter-btn active" data-filter="Todos">Todos</button>
+              <button class="filter-btn" data-filter="Educación">Educación</button>
+              <button class="filter-btn" data-filter="Innovación">Innovación</button>
+              <button class="filter-btn" data-filter="TI">TI</button>
+            </div>
+
+            <div id="mentorGrid" class="mentor-grid"></div>
+
+            <div class="note-box">
+              <strong>Importante:</strong> los grupos permanecen en sus mesas. Al terminar cada ronda, quien se desplaza es el mentor hacia el siguiente grupo de su ruta.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="guia" class="section">
+        <h3>Guía rápida para cada ronda</h3>
+        <p class="lead">Una secuencia sencilla para mantener la conversación enfocada y útil.</p>
+        <div class="accordion">
+          <div class="acc-item open">
+            <button class="acc-btn">1. Comprende el contexto <span>−</span></button>
+            <div class="acc-content">Pregunta qué problema están resolviendo, quién es el usuario y qué han avanzado hasta ese momento.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">2. Profundiza desde tu especialidad <span>+</span></button>
+            <div class="acc-content">Aporta preguntas, criterios y recomendaciones desde Educación, Innovación o TI, según corresponda.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">3. Ayuda a priorizar <span>+</span></button>
+            <div class="acc-content">Identifica junto al equipo qué aspecto debería resolverse primero para fortalecer su MVP.</div>
+          </div>
+          <div class="acc-item">
+            <button class="acc-btn">4. Cierra con acciones concretas <span>+</span></button>
+            <div class="acc-content">Deja entre una y tres acciones que puedan trabajar inmediatamente después de la mentoría.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast">Guardado</div>
+
+<script>
+(function(){
+  "use strict";
+  const mentors = [{"name": "David Orlando Paucar Ochoa", "spec": "Educación", "route": ["Grupo 1", "Grupo 7", "Grupo 4", "Grupo 5"]}, {"name": "Marcelo Jorge Sosa Salazar", "spec": "Educación", "route": ["Grupo 2", "Grupo 8", "Grupo 1", "Grupo 6"]}, {"name": "Priscila Anthuane Diaz Sevillano", "spec": "Educación", "route": ["Grupo 3", "Grupo 9", "Grupo 2", "Grupo 10"]}, {"name": "Renzo Robles León", "spec": "Innovación", "route": ["Grupo 4", "Grupo 1", "Grupo 3", "Grupo 7"]}, {"name": "Mauricio Mendez Vilca", "spec": "Innovación", "route": ["Grupo 5", "Grupo 2", "Grupo 6", "Grupo 8"]}, {"name": "Jefferson Anaya Romero", "spec": "Innovación", "route": ["Grupo 6", "Grupo 10", "Grupo 5", "Grupo 9"]}, {"name": "Jose Aaron Villa Longa", "spec": "TI", "route": ["Grupo 7", "Grupo 3", "Grupo 10", "Grupo 1"]}, {"name": "Jorge Jhon Taipe Figueroa", "spec": "TI", "route": ["Grupo 8", "Grupo 4", "Grupo 7", "Grupo 3"]}, {"name": "Ernesto Jose Delgado Sevilla", "spec": "TI", "route": ["Grupo 9", "Grupo 5", "Grupo 8", "Grupo 4"]}, {"name": "Luis Fernando Flores Mejia", "spec": "TI", "route": ["Grupo 10", "Grupo 6", "Grupo 9", "Grupo 2"]}];
+  const rounds = [{"title": "Ronda 1", "time": "9:20 – 10:00 a. m."}, {"title": "Ronda 2", "time": "10:00 – 10:40 a. m."}, {"title": "Ronda 3", "time": "10:40 – 11:20 a. m."}, {"title": "Ronda 4", "time": "11:20 a. m. – 12:00 p. m."}];
+
+  let selectedIndex = null;
+  let currentFilter = "Todos";
+
+  const app = document.getElementById("app");
+  const menuBtn = document.getElementById("menuBtn");
+  const mentorGrid = document.getElementById("mentorGrid");
+  const roundGrid = document.getElementById("roundGrid");
+  const selectedMentor = document.getElementById("selectedMentor");
+  const resetBtn = document.getElementById("resetBtn");
+  const toast = document.getElementById("toast");
+
+  function isMobile(){ return window.innerWidth <= 1050; }
+
+  menuBtn.addEventListener("click", function(){
+    if(isMobile()) app.classList.toggle("mobile-open");
+    else app.classList.toggle("sidebar-hidden");
+  });
+
+  document.querySelectorAll(".nav-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const target = document.getElementById(btn.dataset.target);
+      if(target) target.scrollIntoView({behavior:"smooth",block:"start"});
+      document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active")});
+      btn.classList.add("active");
+      if(isMobile()) app.classList.remove("mobile-open");
+    });
+  });
+
+  function specClass(spec){
+    if(spec === "Educación") return "edu";
+    if(spec === "Innovación") return "inn";
+    return "ti";
+  }
+
+  function badge(spec){
+    return '<span class="badge ' + specClass(spec) + '">' + spec + '</span>';
+  }
+
+  function mentorKey(mentor){
+    return "hackready_" + mentor.name.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g,"_");
+  }
+
+  function progressKey(mentor, roundIndex){
+    return mentorKey(mentor) + "_round_" + roundIndex;
+  }
+
+  function roundDone(mentor, roundIndex){
+    return localStorage.getItem(progressKey(mentor, roundIndex)) === "1";
+  }
+
+  function setRoundDone(mentor, roundIndex, value){
+    localStorage.setItem(progressKey(mentor, roundIndex), value ? "1" : "0");
+  }
+
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add("show");
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(function(){toast.classList.remove("show")},1400);
+  }
+
+
+  function buildGroupMatrix(){
+    const matrix = {};
+    for(let g=1; g<=10; g++){
+      matrix["Grupo " + g] = [null,null,null,null];
+    }
+    mentors.forEach(function(mentor){
+      mentor.route.forEach(function(group, roundIndex){
+        matrix[group][roundIndex] = mentor;
+      });
+    });
+    return matrix;
+  }
+
+  function renderOverviewTables(){
+    const matrix = buildGroupMatrix();
+    const specialtyBody = document.getElementById("specialtyTableBody");
+    const mentorBody = document.getElementById("mentorTableBody");
+
+    if(!specialtyBody || !mentorBody) return;
+
+    const groups = Array.from({length:10}, function(_,i){ return "Grupo " + (i+1); });
+
+    specialtyBody.innerHTML = groups.map(function(group){
+      const cells = matrix[group].map(function(mentor){
+        return '<td>' + (mentor ? badge(mentor.spec) : '—') + '</td>';
+      }).join("");
+      return '<tr><td>' + group + '</td>' + cells + '</tr>';
+    }).join("");
+
+    mentorBody.innerHTML = groups.map(function(group){
+      const cells = matrix[group].map(function(mentor){
+        return '<td><span class="table-mentor">' + (mentor ? mentor.name : '—') + '</span></td>';
+      }).join("");
+      return '<tr><td>' + group + '</td>' + cells + '</tr>';
+    }).join("");
+  }
+
+  function renderMentors(){
+    const visible = mentors.filter(function(m){
+      return currentFilter === "Todos" || m.spec === currentFilter;
+    });
+
+    mentorGrid.innerHTML = visible.map(function(m){
+      const index = mentors.indexOf(m);
+      const selected = index === selectedIndex ? " selected" : "";
+      return '<button class="mentor-btn' + selected + '" data-index="' + index + '">' +
+        '<span class="mentor-name">' + m.name + '</span>' + badge(m.spec) + '</button>';
+    }).join("");
+
+    mentorGrid.querySelectorAll(".mentor-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        selectedIndex = Number(btn.dataset.index);
+        renderMentors();
+        renderRoute();
+        document.querySelector(".route-area").scrollIntoView({behavior:"smooth",block:"center"});
+      });
+    });
+  }
+
+  function renderRoute(){
+    if(selectedIndex === null){
+      selectedMentor.textContent = "Selecciona una especialidad y luego tu nombre";
+      roundGrid.innerHTML = '<div class="no-selection">Tu ruta aparecerá aquí después de seleccionar tu nombre.</div>';
+      return;
+    }
+
+    const mentor = mentors[selectedIndex];
+    selectedMentor.innerHTML = mentor.name + " " + badge(mentor.spec);
+
+    roundGrid.innerHTML = rounds.map(function(round, i){
+      const done = roundDone(mentor, i);
+      return '<article class="round-card' + (done ? ' done' : '') + '">' +
+        '<div class="round-title">' + round.title + '</div>' +
+        '<div class="round-time">' + round.time + '</div>' +
+        '<div class="round-group">' + mentor.route[i] + '</div>' +
+        '<button class="complete-btn" data-round="' + i + '">' +
+          (done ? '✓ Ronda completada' : 'Marcar como completada') +
+        '</button>' +
+      '</article>';
+    }).join("");
+
+    roundGrid.querySelectorAll(".complete-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        const i = Number(btn.dataset.round);
+        const nowDone = !roundDone(mentor, i);
+        setRoundDone(mentor, i, nowDone);
+        renderRoute();
+        showToast(nowDone ? "Ronda completada" : "Ronda reabierta");
+      });
+    });
+  }
+
+  document.querySelectorAll(".filter-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const newFilter = btn.dataset.filter;
+
+      if(newFilter !== currentFilter){
+        // Se limpia la selección visible al cambiar de especialidad,
+        // pero el progreso almacenado de cada mentor permanece intacto.
+        selectedIndex = null;
+        currentFilter = newFilter;
+
+        document.querySelectorAll(".filter-btn").forEach(function(b){
+          b.classList.remove("active");
+        });
+        btn.classList.add("active");
+
+        renderMentors();
+        renderRoute();
+      }
+    });
+  });
+
+  resetBtn.addEventListener("click", function(){
+    if(selectedIndex === null){
+      showToast("Selecciona primero un mentor");
+      return;
+    }
+    const mentor = mentors[selectedIndex];
+    for(let i=0;i<rounds.length;i++){
+      localStorage.removeItem(progressKey(mentor,i));
+    }
+    renderRoute();
+    showToast("Progreso reiniciado");
+  });
+
+  document.querySelectorAll(".acc-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const item = btn.parentElement;
+      item.classList.toggle("open");
+      const sign = btn.querySelector("span");
+      if(sign) sign.textContent = item.classList.contains("open") ? "−" : "+";
+    });
+  });
+
+  renderOverviewTables();
+  renderMentors();
+  renderRoute();
+})();
+</script>
+</body>
+</html>
